@@ -13,7 +13,6 @@
 
 	var publicMethods = {
 		init: function(options) {
-			console.log(this);
 			return this.each(function() {
 				if(!$.data(this, INPUTY_DATA_KEY)) {
 					$.data(this, INPUTY_DATA_KEY, new Inputy(this, options));
@@ -59,6 +58,10 @@
 	Inputy.prototype = {
 		constructor: Inputy,
 
+		// vars
+		tmp: "",
+
+		// methods
 		init: function() {
 			this.render();
 			this.bindEvents();
@@ -76,11 +79,55 @@
 			var element = $(this.element);
 			var self = this;
 
-			element.find("span").bind("click", function() {
-				var touched = $(this);
-				console.log("Still on development... but soon!");
-
+			element.delegate("span.inputyEditButton", "click", function() {
+				var touched = $(this).parent();
+				self.tmp = touched.clone();
+				var inputyInput = "<input class='inputyInput' type='text'/><span class='inputySaveButton'>Save</span>"
+				
+				touched.html(inputyInput).find("input").focus();
 			});
+
+			element.delegate("span.inputySaveButton", "click", function() {
+				var inputValue = $(this).closest("input").val();
+				if(inputValue) {
+					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
+				} else {
+					$(this).parent().html(self.tmp.html());
+				}
+			});
+
+			element.delegate("input.inputyInput", "blur", function() {
+				var inputValue = $(this).val();
+				if(inputValue) {
+					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
+				} else {
+					$(this).parent().html(self.tmp.html());
+				}
+			});
+		},
+
+		getCleanText: function(from) {
+			return from
+					.clone()    //clone the element
+					.children() //select all the children
+					.remove()   //remove all the children
+					.end()  	//again go back to selected element
+					.text();    //get the text of element
+		},
+
+		setCleanText: function(from, text) {
+			// Save childrens
+			var childs = from.children();
+
+			// Set single text
+			return from
+					.clone()    		//clone the element
+					.children() 		//select all the children
+					.remove()   		//remove all the children
+					.end()  			//again go back to selected element
+					.text(text)    		//set the text of element
+					.append(childs);	//recover all the childrens and return
+
 		}
 
 
@@ -92,9 +139,7 @@
         if(publicMethods[method]) {
             return publicMethods[method].apply($(this).data(INPUTY_DATA_KEY),  Array.prototype.slice.call(arguments, 1));
         } else {
-
             return publicMethods.init.apply(this, arguments);
-
         }
 
     };
