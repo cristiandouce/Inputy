@@ -7,6 +7,7 @@
 	};
 	
 	var DEFAULT_TEMPLATES = {
+		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
 		inputyActive: '<input class="$INPUT_CLASS" type="text"/><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
@@ -31,7 +32,6 @@
 			}
 		})();
 
-	console.log(DEFAULT_CLASSES);
 	var publicMethods = {
 		init: function(options) {
 			return this.each(function() {
@@ -44,6 +44,7 @@
 
 	var Inputy = function(element, options) {
 		this.element = element;
+		this.parentForm = $(element).closest("form");
 
 		// Build settings object
 		this.settings = {};
@@ -93,9 +94,12 @@
 		},
 
 		render: function() {
-			var buttonSave = this._buildButtonSave();
-			$(this.element).append(buttonSave);
-			
+			var buttonEdit = this._buildButtonEdit();
+			var formInput = this._buildFormInput();
+
+			//render buttonEdit
+			$(this.element).append(buttonEdit);
+			$(this.parentForm).prepend(formInput);
 		},
 
 		bindEvents: function() {
@@ -153,7 +157,14 @@
 
 		},
 
-		_buildButtonSave: function() {
+		_buildFormInput: function() {
+			var elementId = $(this.element).prop("id");
+			return this.settings.templates.formInput
+					.replace("$ELEMENT_ID", elementId ? elementId : this._getHashedString())
+					.replace("$INPUT_VALUE", this.getCleanText($(this.element)));
+		},
+
+		_buildButtonEdit: function() {
 			return this.settings.templates.buttonEdit
 					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_EDIT_CLASS", this.settings.classes.inputyCompleteEditButton);
@@ -164,6 +175,10 @@
 					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
 					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
+		},
+
+		_getHashedString: function() {
+			return $(this.element).prop("tagName").toLowerCase() + "[]";		
 		}
 
 
