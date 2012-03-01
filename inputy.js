@@ -6,11 +6,32 @@
 
 	};
 	
-	var DEFAULT_CLASSES = {
-		inputyElement: "inputy",
-		inputyInput: "inputyInput"
+	var DEFAULT_TEMPLATES = {
+		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
+		inputyActive: '<input class="$INPUT_CLASS" type="text"/><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
 
+	var DEFAULT_CLASSES = (function() {
+			//temporarily using jquery-ui themes classes
+			var inputyDefaultSource = "inputy",
+				inputyInput = "inputy-input",
+				inputyButtonContainer = "inputy-anchor-container",
+				inputySaveButton = "inputy-save-button",
+				inputyEditButton = "inputy-edit-button";
+
+			return {
+				inputyDefaultSource: inputyDefaultSource,
+				inputyInput: inputyInput,
+				inputyButtonContainer: inputyButtonContainer,
+				inputyCompleteButtonContainer: "ui-state-default " + inputyButtonContainer,
+				inputySaveButton: inputySaveButton,
+				inputyCompleteSaveButton: "ui-icon ui-icon-circle-check " + inputySaveButton,
+				inputyEditButton: inputyEditButton,
+				inputyCompleteEditButton: "ui-icon ui-icon-pencil " + inputyEditButton
+			}
+		})();
+
+	console.log(DEFAULT_CLASSES);
 	var publicMethods = {
 		init: function(options) {
 			return this.each(function() {
@@ -52,6 +73,10 @@
 			this.settings.classes = DEFAULT_CLASSES;
 		};
 
+		// Build classes names
+		this.settings.templates = DEFAULT_TEMPLATES;
+
+
 		this.init();
 	};
 
@@ -65,13 +90,11 @@
 		init: function() {
 			this.render();
 			this.bindEvents();
-
 		},
 
 		render: function() {
-			var html = '<span class="inputyEditButton">Edit</span>';
-
-			$(this.element).append(html);
+			var buttonSave = this._buildButtonSave();
+			$(this.element).append(buttonSave);
 			
 		},
 
@@ -79,15 +102,15 @@
 			var element = $(this.element);
 			var self = this;
 
-			element.delegate("span.inputyEditButton", "click", function() {
-				var touched = $(this).parent();
+			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function() {
+				var touched = $(this).parent().parent();
 				self.tmp = touched.clone();
-				var inputyInput = "<input class='inputyInput' type='text'/><span class='inputySaveButton'>Save</span>"
+				var inputyActive = self._buildActive();
 				
-				touched.html(inputyInput).find("input").focus();
+				touched.html(inputyActive).find("input").focus();
 			});
 
-			element.delegate("span.inputySaveButton", "click", function() {
+			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function() {
 				var inputValue = $(this).closest("input").val();
 				if(inputValue) {
 					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
@@ -96,7 +119,7 @@
 				}
 			});
 
-			element.delegate("input.inputyInput", "blur", function() {
+			element.delegate("input." + this.settings.classes.inputyInput, "blur", function() {
 				var inputValue = $(this).val();
 				if(inputValue) {
 					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
@@ -128,6 +151,19 @@
 					.text(text)    		//set the text of element
 					.append(childs);	//recover all the childrens and return
 
+		},
+
+		_buildButtonSave: function() {
+			return this.settings.templates.buttonEdit
+					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
+					.replace("$BUTTON_EDIT_CLASS", this.settings.classes.inputyCompleteEditButton);
+		},
+
+		_buildActive: function() {
+			return this.settings.templates.inputyActive
+					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
+					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
+					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
 		}
 
 

@@ -1,4 +1,9 @@
-.inputySaveButton, .inputyEditButton {
-	margin:2px;
-	border:1px solid blue;
+.inputy-anchor-container {
+	float: left;
+	display: block;
+	border: 1px solid transparent;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	margin-right:5px;
 }
