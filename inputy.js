@@ -9,13 +9,14 @@
 	var DEFAULT_TEMPLATES = {
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyActive: '<input class="$INPUT_CLASS" type="text"/><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
+		inputyActive: '<input class="$INPUT_CLASS" type="text" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
 			//temporarily using jquery-ui themes classes
 			var inputyDefaultSource = "inputy",
 				inputyInput = "inputy-input",
+				inputyForm = "inputy-form",
 				inputyButtonContainer = "inputy-anchor-container",
 				inputySaveButton = "inputy-save-button",
 				inputyEditButton = "inputy-edit-button";
@@ -23,6 +24,7 @@
 			return {
 				inputyDefaultSource: inputyDefaultSource,
 				inputyInput: inputyInput,
+				inputyForm: inputyForm,
 				inputyButtonContainer: inputyButtonContainer,
 				inputyCompleteButtonContainer: "ui-state-default " + inputyButtonContainer,
 				inputySaveButton: inputySaveButton,
@@ -43,9 +45,6 @@
 	};
 
 	var Inputy = function(element, options) {
-		this.element = element;
-		this.parentForm = $(element).closest("form");
-
 		// Build settings object
 		this.settings = {};
 
@@ -77,6 +76,8 @@
 		// Build classes names
 		this.settings.templates = DEFAULT_TEMPLATES;
 
+		this.element = element;
+		this.parentForm = $(element).closest("form").addClass(this.settings.classes.inputyForm);
 
 		this.init();
 	};
@@ -99,40 +100,60 @@
 
 			//render buttonEdit
 			$(this.element).append(buttonEdit);
-			$(this.parentForm).prepend(formInput);
+			this._formInput = $(formInput);
+			$(this.parentForm).prepend(this._formInput);
 		},
 
 		bindEvents: function() {
 			var element = $(this.element);
 			var self = this;
 
+			//If form exists, then I should delegate all events to it as container!!
+			// But I would have trouble with overriding... (?)
 			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function() {
-				var touched = $(this).parent().parent();
+				var touched = $(this).parent().parent(),
+					inputyActive = self._buildActive();
 				self.tmp = touched.clone();
-				var inputyActive = self._buildActive();
 				
-				touched.html(inputyActive).find("input").focus();
+				touched.html(inputyActive);
 			});
 
 			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function() {
-				var inputValue = $(this).closest("input").val();
-				if(inputValue) {
-					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
-				} else {
-					$(this).parent().html(self.tmp.html());
-				}
+				var inputySelector = "input." + self.settings.classes.inputyInput,
+					inputyValue = $(inputySelector).val();
+				self._contentUpdate(inputyValue);
 			});
 
 			element.delegate("input." + this.settings.classes.inputyInput, "blur", function() {
-				var inputValue = $(this).val();
-				if(inputValue) {
-					$(this).parent().html(self.setCleanText($(self.tmp), inputValue).html());
-				} else {
-					$(this).parent().html(self.tmp.html());
-				}
+				var inputySelector = "input." + self.settings.classes.inputyInput,
+					inputyValue = $(inputySelector).val();
+				self._contentUpdate(inputyValue);
 			});
-		},
 
+			// !! Hack to prevent form submit
+			// element.delegate("input." + this.settings.classes.inputyInput, "keypress", function() {
+			// 	debugger;
+			// });
+
+			//This is not working!!!!
+
+			// element.delegate("form", "submit", function(ev) {
+			// 	console.log(ev);
+			// 	console.log(this.element);
+			// 	debugger;
+			// 	if (ev.originalEvent.explicitOriginalTarget == this.element) {
+			// 		debugger;
+			// 		var inputySelector = "input." + self.settings.classes.inputyInput,
+			// 			inputyValue = $(inputySelector).val();
+			// 		self._contentUpdate(inputyValue);
+			// 	} else {
+			// 		debugger;
+			// 	}
+
+			// 	// Would be nice so have a callback CALLER here
+			// 	// or continue then with default...
+			// });
+		},
 		getCleanText: function(from) {
 			return from
 					.clone()    //clone the element
@@ -179,7 +200,25 @@
 
 		_getHashedString: function() {
 			return $(this.element).prop("tagName").toLowerCase() + "[]";		
-		}
+		},
+
+		_contentUpdate: function(inputValue) {
+			if(inputValue) {
+				this._setElementContent(inputValue);
+
+			} else {
+				this._setElementContent();
+			}
+		},
+
+		_setElementContent: function(content) {
+			if (content === undefined) {
+				$(this.element).html(this.tmp.html());
+			} else {
+				$(this.element).html(this.setCleanText($(this.tmp), content).html());
+				this._formInput.val(content);
+			}
+		},
 
 
 	}
