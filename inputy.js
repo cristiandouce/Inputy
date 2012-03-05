@@ -138,7 +138,7 @@
 				self._contentUpdate(inputyValue);
 			});
 		},
-		
+
 		getCleanText: function(from) {
 			return from
 					.clone()    //clone the element
@@ -165,8 +165,9 @@
 
 		_buildFormInput: function() {
 			var elementId = $(this.element).prop("id");
+			var inputName = $(this.element).data("name");
 			return this.settings.templates.formInput
-					.replace("$ELEMENT_ID", elementId ? elementId : this._getHashedString())
+					.replace("$ELEMENT_ID", inputName || elementId || this._getHashedString())
 					.replace("$INPUT_VALUE", this.getCleanText($(this.element)));
 		},
 
