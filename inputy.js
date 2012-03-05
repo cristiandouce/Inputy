@@ -26,11 +26,11 @@
 				inputyInput: inputyInput,
 				inputyForm: inputyForm,
 				inputyButtonContainer: inputyButtonContainer,
-				inputyCompleteButtonContainer: "ui-state-default " + inputyButtonContainer,
+				inputyCompleteButtonContainer: inputyButtonContainer,
 				inputySaveButton: inputySaveButton,
-				inputyCompleteSaveButton: "ui-icon ui-icon-circle-check " + inputySaveButton,
+				inputyCompleteSaveButton: "icon icon-circle-check " + inputySaveButton,
 				inputyEditButton: inputyEditButton,
-				inputyCompleteEditButton: "ui-icon ui-icon-pencil " + inputyEditButton
+				inputyCompleteEditButton: "icon icon-pencil " + inputyEditButton
 			}
 		})();
 
@@ -45,6 +45,8 @@
 	};
 
 	var Inputy = function(element, options) {
+		Inputy.count++;
+		this.instanceNumber = Inputy.count;
 		// Build settings object
 		this.settings = {};
 
@@ -82,11 +84,13 @@
 		this.init();
 	};
 
+	Inputy.count = 0;
 	Inputy.prototype = {
 		constructor: Inputy,
 
 		// vars
 		tmp: "",
+		instanceNumber:0,
 
 		// methods
 		init: function() {
@@ -110,7 +114,7 @@
 
 			//If form exists, then I should delegate all events to it as container!!
 			// But I would have trouble with overriding... (?)
-			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function() {
+			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
 				var touched = $(this).parent().parent(),
 					inputyActive = self._buildActive();
 				self.tmp = touched.clone();
@@ -118,13 +122,17 @@
 				touched.html(inputyActive);
 			});
 
-			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function() {
+			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function(ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
 				var inputySelector = "input." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				self._contentUpdate(inputyValue);
 			});
 
-			element.delegate("input." + this.settings.classes.inputyInput, "blur", function() {
+			element.delegate("input." + this.settings.classes.inputyInput, "blur", function(ev) {
+				ev.preventDefault();
+				ev.stopPropagation();
 				var inputySelector = "input." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				self._contentUpdate(inputyValue);
@@ -137,22 +145,31 @@
 
 			//This is not working!!!!
 
-			// element.delegate("form", "submit", function(ev) {
-			// 	console.log(ev);
-			// 	console.log(this.element);
-			// 	debugger;
-			// 	if (ev.originalEvent.explicitOriginalTarget == this.element) {
-			// 		debugger;
-			// 		var inputySelector = "input." + self.settings.classes.inputyInput,
-			// 			inputyValue = $(inputySelector).val();
-			// 		self._contentUpdate(inputyValue);
-			// 	} else {
-			// 		debugger;
-			// 	}
+			element.closest("form").bind("submit", (function() {
+				
+				var el = self.element;
 
-			// 	// Would be nice so have a callback CALLER here
-			// 	// or continue then with default...
-			// });
+				return function(ev) {
+					console.log(ev);
+					console.log(el);
+					debugger;
+					ev.preventDefault();
+					ev.stopPropagation();
+					return false;
+				}
+
+				// if (ev.originalEvent.explicitOriginalTarget == this.element) {
+				// 	debugger;
+				// 	var inputySelector = "input." + self.settings.classes.inputyInput,
+				// 		inputyValue = $(inputySelector).val();
+				// 	self._contentUpdate(inputyValue);
+				// } else {
+				// 	debugger;
+				// }
+
+				// Would be nice so have a callback CALLER here
+				// or continue then with default...
+			})());
 		},
 		getCleanText: function(from) {
 			return from
@@ -199,7 +216,7 @@
 		},
 
 		_getHashedString: function() {
-			return $(this.element).prop("tagName").toLowerCase() + "[]";		
+			return $(this.element).prop("tagName").toLowerCase() + this.instanceNumber;		
 		},
 
 		_contentUpdate: function(inputValue) {

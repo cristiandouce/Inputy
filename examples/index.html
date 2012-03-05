@@ -8,10 +8,10 @@
 </head>
 <body>
 	<form id="joya" method="post" action="index.html">
-		<h3 class="inputy">This is an example text</h3>
+		<h3 id="title" class="inputy">This is an example text</h3>
 		<p class="inputy">This is other example text</p>
 		<p class="inputy">This is other example text</p>
-		<input type="submit"/>
+		<button>Submit</button>
 	</form>
 
 
@@ -23,8 +23,8 @@
 		$(".inputy").Inputy({});
 		var formValues = [];
 		// $("form").submit(function(ev) {
-		// 	// ev.preventDefault();
-		// 	// ev.stopPropagation();
+		// 	ev.preventDefault();
+		// 	ev.stopPropagation();
 		// 	var values = {};
 		// 	console.info($(this).serializeArray());
 		// });
