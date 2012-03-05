@@ -137,40 +137,8 @@
 					inputyValue = $(inputySelector).val();
 				self._contentUpdate(inputyValue);
 			});
-
-			// !! Hack to prevent form submit
-			// element.delegate("input." + this.settings.classes.inputyInput, "keypress", function() {
-			// 	debugger;
-			// });
-
-			//This is not working!!!!
-
-			element.closest("form").bind("submit", (function() {
-				
-				var el = self.element;
-
-				return function(ev) {
-					console.log(ev);
-					console.log(el);
-					debugger;
-					ev.preventDefault();
-					ev.stopPropagation();
-					return false;
-				}
-
-				// if (ev.originalEvent.explicitOriginalTarget == this.element) {
-				// 	debugger;
-				// 	var inputySelector = "input." + self.settings.classes.inputyInput,
-				// 		inputyValue = $(inputySelector).val();
-				// 	self._contentUpdate(inputyValue);
-				// } else {
-				// 	debugger;
-				// }
-
-				// Would be nice so have a callback CALLER here
-				// or continue then with default...
-			})());
 		},
+		
 		getCleanText: function(from) {
 			return from
 					.clone()    //clone the element
