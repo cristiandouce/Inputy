@@ -9,7 +9,8 @@
 	var DEFAULT_TEMPLATES = {
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyActive: '<input class="$INPUT_CLASS" type="text" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
+		inputyText: '<input class="$INPUT_CLASS" type="text" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
+		inputyTextArea: '<textarea class="$INPUT_CLASS" autofocus ></textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
@@ -45,8 +46,10 @@
 	};
 
 	var Inputy = function(element, options) {
+		//Set instance Id
 		Inputy.count++;
 		this.instanceNumber = Inputy.count;
+
 		// Build settings object
 		this.settings = {};
 
@@ -77,9 +80,15 @@
 
 		// Build classes names
 		this.settings.templates = DEFAULT_TEMPLATES;
+		if ($(element).data("type") == "textarea") {
+			this.inputTemplate = this.settings.templates.inputyTextArea;
+		} else {
+			this.inputTemplate = this.settings.templates.inputyText;
+		};
 
 		this.element = element;
 		this.parentForm = $(element).closest("form").addClass(this.settings.classes.inputyForm);
+		
 
 		this.init();
 	};
@@ -125,15 +134,15 @@
 			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				var inputySelector = "input." + self.settings.classes.inputyInput,
+				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				self._contentUpdate(inputyValue);
 			});
 
-			element.delegate("input." + this.settings.classes.inputyInput, "blur", function(ev) {
+			element.delegate("." + this.settings.classes.inputyInput, "blur", function(ev) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				var inputySelector = "input." + self.settings.classes.inputyInput,
+				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				self._contentUpdate(inputyValue);
 			});
@@ -178,7 +187,7 @@
 		},
 
 		_buildActive: function() {
-			return this.settings.templates.inputyActive
+			return this.inputTemplate
 					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
 					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
