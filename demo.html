@@ -1,0 +1,33 @@
+<html>
+<head>
+	<title>Inputy.js</title>
+
+	<!-- StyleSheets -->
+	<link rel="stylesheet" type="text/css" href="js/inputy/inputy.css">
+</head>
+<body>
+	<p>Return <a href="index.html">here</a></p>
+	<form id="joya" method="post" action="index.html" style="width:350px">
+		<h3 id="title" class="inputy">This is an example text</h3>
+		<p class="inputy" data-name="paragraph1">This is other example text</p>
+		<p class="inputy" data-type="textarea">This is other example text</p>
+		<button>Submit</button>
+	</form>
+
+
+	<!-- Scripts -->
+	<script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script type="text/javascript" charset="utf-8" src="js/inputy/inputy.js"></script>
+	
+	<script type="text/javascript">
+		$(".inputy").Inputy({});
+		var formValues = [];
+		$("form").submit(function(ev) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			var values = {};
+			console.info($(this).serializeArray());
+		});
+	</script>
+</body>
+</html>
