@@ -3,7 +3,7 @@
 	<title>Inputy.js</title>
 
 	<!-- StyleSheets -->
-	<link rel="stylesheet" type="text/css" href="../inputy.css">
+	<link rel="stylesheet" type="text/css" href="inputy/inputy.css">
 </head>
 <body>
 	<form id="joya" method="post" action="index.html" style="width:350px">
@@ -16,17 +16,17 @@
 
 	<!-- Scripts -->
 	<script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-	<script type="text/javascript" charset="utf-8" src="../inputy.js"></script>
+	<script type="text/javascript" charset="utf-8" src="inputy/inputy.js"></script>
 	
 	<script type="text/javascript">
 		$(".inputy").Inputy({});
 		var formValues = [];
-		// $("form").submit(function(ev) {
-		// 	ev.preventDefault();
-		// 	ev.stopPropagation();
-		// 	var values = {};
-		// 	console.info($(this).serializeArray());
-		// });
+		$("form").submit(function(ev) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			var values = {};
+			console.info($(this).serializeArray());
+		});
 	</script>
 </body>
 </html>
