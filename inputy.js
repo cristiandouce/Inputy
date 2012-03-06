@@ -9,8 +9,8 @@
 	var DEFAULT_TEMPLATES = {
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyText: '<input class="$INPUT_CLASS" type="text" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
-		inputyTextArea: '<textarea class="$INPUT_CLASS" autofocus ></textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
+		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
+		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus ></textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
@@ -94,6 +94,24 @@
 	};
 
 	Inputy.count = 0;
+
+	Inputy.helpers = {
+		textWidth: function(element) {
+			var f = element.css('font') || '12px arial',
+				o = $('<div>' + Inputy.prototype.getCleanText(element) + '</div>')
+				    .css({'position': 'relative', 'float': 'left', 'white-space': 'wrap', 'visibility': 'hidden', 'font': f}),
+				w;
+
+			element.after(o);
+
+			w = o.width();
+
+			o.remove();
+
+			return w;
+		}
+	};
+
 	Inputy.prototype = {
 		constructor: Inputy,
 
@@ -110,10 +128,12 @@
 		render: function() {
 			var buttonEdit = this._buildButtonEdit();
 			var formInput = this._buildFormInput();
+			this._formInput = $(formInput);
 
 			//render buttonEdit
 			$(this.element).append(buttonEdit);
-			this._formInput = $(formInput);
+
+			//render formInput
 			$(this.parentForm).prepend(this._formInput);
 		},
 
@@ -189,6 +209,7 @@
 		_buildActive: function() {
 			return this.inputTemplate
 					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
+					.replace("$INPUT_STYLE", this._getInputBuiltStyle())
 					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
 		},
@@ -215,6 +236,10 @@
 			}
 		},
 
+		_getInputBuiltStyle: function() {
+			return "width:$W;".replace("$W",Inputy.helpers.textWidth($(this.element)));
+		},
+
 
 	}
 
@@ -229,4 +254,5 @@
 
     };
 
+    window.Inputy = Inputy;
 })(jQuery);
