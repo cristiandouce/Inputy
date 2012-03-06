@@ -237,7 +237,7 @@
 		},
 
 		_getInputBuiltStyle: function() {
-			return "width:$W;".replace("$W",Inputy.helpers.textWidth($(this.element)));
+			return "width:$W;".replace("$W",Inputy.helpers.textWidth($(this.element))+'px');
 		},
 
 
