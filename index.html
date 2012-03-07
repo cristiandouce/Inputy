@@ -19,13 +19,14 @@
 	<script type="text/javascript" charset="utf-8" src="inputy/inputy.js"></script>
 	
 	<script type="text/javascript">
-		$(".inputy").Inputy({});
+		var inputy = $(".inputy").Inputy({});
 		var formValues = [];
 		$("form").submit(function(ev) {
 			ev.preventDefault();
 			ev.stopPropagation();
 			var values = {};
 			console.info($(this).serializeArray());
+			console.info(inputy.Inputy("getFormValues"));
 		});
 	</script>
 </body>

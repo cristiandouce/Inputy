@@ -9,8 +9,8 @@
 	var DEFAULT_TEMPLATES = {
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus /><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
-		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus ></textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
+		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus value="$INPUT_VALUE"/><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
+		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus >$INPUT_VALUE</textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
@@ -42,29 +42,53 @@
 					$.data(this, INPUTY_DATA_KEY, new Inputy(this, options));
 				}
 			});
+		},
+
+		getFormValues: function() {
+			var retValues = {};
+			for(uid in CACHE.el) {
+				retValues[CACHE.el[uid].inputName] = CACHE.el[uid].cleanValue;
+			}
+
+			return retValues;
 		}
 	};
 
+	var CACHE = {
+		el: {},
+
+	};
+
+
 	var Inputy = function(element, options) {
-		//Set instance Id
-		Inputy.count++;
-		this.instanceNumber = Inputy.count;
+
+		// Set instance Id
+		this.instanceNumber = Inputy.count++;
+		this.uid = element.tagName + '-' + new Date().getTime() + "-" + this.instanceNumber;
+
+		// Set cache element data reference object
+		CACHE.el[this.uid] = {};
 
 		// Build settings object
 		this.settings = {};
 
 		// Build callbacks
 		if (options.callbacks) {
-			//Use custom callbacks
+			// Use custom callbacks
 			this.settings.callbacks = $.extend({}, DEFAULT_CALLBACKS, options.callbacks);
 		} else {
+			// Use default callbacks
 			this.settings.callbacks = DEFAULT_CALLBACKS;
 		};
 
 		// Build classes names
 		if (options.classes) {
-			//Use custom class names
-			this.settings.classes = $.extend({}, DEFAULT_CLASSES, options.classes);
+			if (!this.settings.appendClasses) {
+				// Override custom class names
+				this.settings.classes = $.extend({}, DEFAULT_CLASSES, options.classes);
+			} else {
+				// Append custom class names
+			};
 		
 		} else if(options.theme) {
 			// Use theme-suffixed default class names
@@ -87,6 +111,7 @@
 		};
 
 		this.element = element;
+		this.$element = $(element);
 		this.parentForm = $(element).closest("form").addClass(this.settings.classes.inputyForm);
 		
 
@@ -94,35 +119,38 @@
 	};
 
 	Inputy.count = 0;
-
+	
 	Inputy.helpers = {
-		textWidth: function(element) {
+		getElementMetrics: function(element) {
 			var f = element.css('font') || '12px arial',
 				o = $('<div>' + Inputy.prototype.getCleanText(element) + '</div>')
 				    .css({'position': 'relative', 'float': 'left', 'white-space': 'wrap', 'visibility': 'hidden', 'font': f}),
-				w;
+				metrics;
 
 			element.after(o);
 
-			w = o.width();
+			metrics = {
+				textWidth: o.width(),
+				textHeight: o.height(),
+			};
 
 			o.remove();
 
-			return w;
+			return metrics;
 		}
 	};
 
 	Inputy.prototype = {
 		constructor: Inputy,
 
-		// vars
-		tmp: "",
-		instanceNumber:0,
+		//vars
+		// 
 
 		// methods
 		init: function() {
 			this.render();
 			this.bindEvents();
+			this._initCache();
 		},
 
 		render: function() {
@@ -131,14 +159,14 @@
 			this._formInput = $(formInput);
 
 			//render buttonEdit
-			$(this.element).append(buttonEdit);
+			this.$element.append(buttonEdit);
 
 			//render formInput
 			$(this.parentForm).prepend(this._formInput);
 		},
 
 		bindEvents: function() {
-			var element = $(this.element);
+			var element = this.$element;
 			var self = this;
 
 			//If form exists, then I should delegate all events to it as container!!
@@ -146,24 +174,27 @@
 			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
 				var touched = $(this).parent().parent(),
 					inputyActive = self._buildActive();
-				self.tmp = touched.clone();
-				
+				ev.preventDefault();
+				ev.stopPropagation();
+
 				touched.html(inputyActive);
 			});
 
 			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function(ev) {
-				ev.preventDefault();
-				ev.stopPropagation();
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
+				ev.preventDefault();
+				ev.stopPropagation();
+
 				self._contentUpdate(inputyValue);
 			});
 
 			element.delegate("." + this.settings.classes.inputyInput, "blur", function(ev) {
-				ev.preventDefault();
-				ev.stopPropagation();
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
+				ev.preventDefault();
+				ev.stopPropagation();
+
 				self._contentUpdate(inputyValue);
 			});
 		},
@@ -193,11 +224,9 @@
 		},
 
 		_buildFormInput: function() {
-			var elementId = $(this.element).prop("id");
-			var inputName = $(this.element).data("name");
 			return this.settings.templates.formInput
-					.replace("$ELEMENT_ID", inputName || elementId || this._getHashedString())
-					.replace("$INPUT_VALUE", this.getCleanText($(this.element)));
+					.replace("$ELEMENT_ID", this._getFormInputName())
+					.replace("$INPUT_VALUE", this.getCleanText(this.$element));
 		},
 
 		_buildButtonEdit: function() {
@@ -209,36 +238,77 @@
 		_buildActive: function() {
 			return this.inputTemplate
 					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
+					.replace("$INPUT_VALUE", CACHE.el[this.uid].cleanValue)
 					.replace("$INPUT_STYLE", this._getInputBuiltStyle())
 					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
 		},
 
 		_getHashedString: function() {
-			return $(this.element).prop("tagName").toLowerCase() + this.instanceNumber;		
+			var $element = CACHE.el[this.uid].element || this.$element;
+			return this.$element.prop("tagName").toLowerCase() + this.instanceNumber;		
 		},
 
 		_contentUpdate: function(inputValue) {
-			if(inputValue) {
-				this._setElementContent(inputValue);
+			var cachedValue = CACHE.el[this.uid].cleanValue;
 
+			if(inputValue !== cachedValue) {
+				// Updates content
+				this._setElementContent(inputValue);
+				// Refreshes cache
+				this._refreshCache("content");
 			} else {
+				// Use cached content
 				this._setElementContent();
 			}
 		},
 
 		_setElementContent: function(content) {
-			if (content === undefined) {
-				$(this.element).html(this.tmp.html());
+			var $element = CACHE.el[this.uid].element;
+			if (content === undefined || content == "") {
+				this.$element.html($element.html());
 			} else {
-				$(this.element).html(this.setCleanText($(this.tmp), content).html());
+				this.$element.html(this.setCleanText($element, content).html());
+
 				this._formInput.val(content);
 			}
 		},
 
 		_getInputBuiltStyle: function() {
-			return "width:$W;".replace("$W",Inputy.helpers.textWidth($(this.element))+'px');
+			var eMetrics = Inputy.helpers.getElementMetrics(this.$element)
+				w = CACHE.el[this.uid].element.data("fixed-width"),
+				h = CACHE.el[this.uid].element.data("fixed-height");
+
+			return "width:$Wpx;height:$Hpx;"
+				.replace("$W", w || eMetrics.textWidth)
+				.replace("$H", h || eMetrics.textHeight);
 		},
+
+		_getFormInputName: function() {
+			var elementId = this.$element.prop("id");
+			var inputName = this.$element.data("name");
+
+			return CACHE.el[this.uid].inputName || inputName || elementId || this._getHashedString();
+		},
+
+		_initCache: function() {
+
+			CACHE.el[this.uid] = {
+				inputyObj: this, // Unique reference
+				element: this.$element.clone(),
+				inputName: this._getFormInputName(),
+				cleanValue: this.getCleanText(this.$element)
+			}
+		},
+
+		_refreshCache: function(key, value) {
+			var el = CACHE.el[this.uid],
+				$element = this.$element;
+			if (key == "content") {
+				el.element = $element.clone();
+				el.cleanValue = this.getCleanText($element);
+			};
+		}
 
 
 	}
@@ -254,5 +324,5 @@
 
     };
 
-    window.Inputy = Inputy;
+    // window.Inputy = Inputy;
 })(jQuery);
