@@ -200,12 +200,12 @@
 		},
 
 		getCleanText: function(from) {
-			return from
+			return $.trim(from
 					.clone()    //clone the element
 					.children() //select all the children
 					.remove()   //remove all the children
 					.end()  	//again go back to selected element
-					.text();    //get the text of element
+					.text());    //get the text of element
 		},
 
 		setCleanText: function(from, text) {
@@ -218,7 +218,7 @@
 					.children() 		//select all the children
 					.remove()   		//remove all the children
 					.end()  			//again go back to selected element
-					.text(text)    		//set the text of element
+					.text($.trim(text))    		//set the text of element
 					.append(childs);	//recover all the childrens and return
 
 		},
