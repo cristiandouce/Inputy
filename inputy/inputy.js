@@ -38,7 +38,7 @@
 				inputyCompleteUpdateButton: "icon icon-circle-check " + inputyUpdateButton,
 
 				inputyCancelButton: inputyCancelButton,
-				inputyCompleteCancelButton: "icon icon-circle-cross " + inputyCancelButton,
+				inputyCompleteCancelButton: "icon icon-circle-close " + inputyCancelButton,
 
 				inputyEditButton: inputyEditButton,
 				inputyCompleteEditButton: "icon icon-pencil " + inputyEditButton
