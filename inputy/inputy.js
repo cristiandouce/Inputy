@@ -8,9 +8,12 @@
 	
 	var DEFAULT_TEMPLATES = {
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
-		buttonEdit: '<a class="$CONTAINER_CLASS"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus value="$INPUT_VALUE"/><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>',
-		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus >$INPUT_VALUE</textarea><a class="$CONTAINER_CLASS"><span class="$BUTTON_SAVE_CLASS">Save</span></a>'
+		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus value="$INPUT_VALUE"/>$BUTTONS_CONTAINER',
+		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus >$INPUT_VALUE</textarea>$BUTTONS_CONTAINER',
+		buttonEdit: '<span class="$BUTTON_EDIT_CLASS">Edit</span>',
+		inputyUpdate: '<a><span class="$BUTTON_UPDATE_CLASS">Update</span></a>',
+		inputyCancel: '<a><span class="$BUTTON_CANCEL_CLASS">Cancel</span></a>',
+		inputyButtonsContainer: '<div class="$CONTAINER_CLASS">$BUTTON</div>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
@@ -18,18 +21,25 @@
 			var inputyDefaultSource = "inputy",
 				inputyInput = "inputy-input",
 				inputyForm = "inputy-form",
-				inputyButtonContainer = "inputy-anchor-container",
-				inputySaveButton = "inputy-save-button",
+				inputyButtonContainer = "inputy-container",
+				inputyUpdateButton = "inputy-update-button",
+				inputyCancelButton = "inputy-cancel-button",
 				inputyEditButton = "inputy-edit-button";
 
 			return {
 				inputyDefaultSource: inputyDefaultSource,
 				inputyInput: inputyInput,
 				inputyForm: inputyForm,
+
 				inputyButtonContainer: inputyButtonContainer,
 				inputyCompleteButtonContainer: inputyButtonContainer,
-				inputySaveButton: inputySaveButton,
-				inputyCompleteSaveButton: "icon icon-circle-check " + inputySaveButton,
+
+				inputyUpdateButton: inputyUpdateButton,
+				inputyCompleteUpdateButton: "icon icon-circle-check " + inputyUpdateButton,
+
+				inputyCancelButton: inputyCancelButton,
+				inputyCompleteCancelButton: "icon icon-circle-cross " + inputyCancelButton,
+
 				inputyEditButton: inputyEditButton,
 				inputyCompleteEditButton: "icon icon-pencil " + inputyEditButton
 			}
@@ -154,7 +164,7 @@
 		},
 
 		render: function() {
-			var buttonEdit = this._buildButtonEdit();
+			var buttonEdit = this._buildButtons(["Edit"]);
 			var formInput = this._buildFormInput();
 			this._formInput = $(formInput);
 
@@ -180,7 +190,7 @@
 				touched.html(inputyActive);
 			});
 
-			element.delegate("span." + this.settings.classes.inputySaveButton, "click", function(ev) {
+			element.delegate("span." + this.settings.classes.inputyUpdateButton, "click", function(ev) {
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				ev.preventDefault();
@@ -231,8 +241,32 @@
 
 		_buildButtonEdit: function() {
 			return this.settings.templates.buttonEdit
-					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
 					.replace("$BUTTON_EDIT_CLASS", this.settings.classes.inputyCompleteEditButton);
+		},
+
+		_buildButtonUpdate: function() {
+			return this.settings.templates.inputyUpdate
+					.replace("$BUTTON_UPDATE_CLASS", this.settings.classes.inputyCompleteUpdateButton);
+		},
+
+		_buildButtonCancel: function() {
+			return this.settings.templates.inputyCancel
+					.replace("$BUTTON_CANCEL_CLASS", this.settings.classes.inputyCompleteCancelButton);
+		},
+
+		_buildButtons: function(buttonsTypesArray) {
+			var buttonType,
+				buildButtonMethod = "_buildButton",
+				buttonsBuffer = "", buttonTemp;
+
+			for (buttonType in buttonsTypesArray) {
+				buttonTemp = this[buildButtonMethod + buttonsTypesArray[buttonType]]();
+				buttonsBuffer += this.settings.templates.inputyButtonsContainer
+									.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
+									.replace("$BUTTON", buttonTemp);
+			}
+
+			return buttonsBuffer;
 		},
 
 		_buildActive: function() {
@@ -240,9 +274,9 @@
 					.replace("$INPUT_CLASS", this.settings.classes.inputyInput)
 					.replace("$INPUT_VALUE", CACHE.el[this.uid].cleanValue)
 					.replace("$INPUT_STYLE", this._getInputBuiltStyle())
-					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
-					.replace("$BUTTON_SAVE_CLASS", this.settings.classes.inputyCompleteSaveButton);
+					.replace("$BUTTONS_CONTAINER", this._buildButtons(["Update","Cancel"]));
 		},
+
 
 		_getHashedString: function() {
 			var $element = CACHE.el[this.uid].element || this.$element;
