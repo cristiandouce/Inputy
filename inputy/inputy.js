@@ -10,10 +10,10 @@
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus value="$INPUT_VALUE"/>$BUTTONS_CONTAINER',
 		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus >$INPUT_VALUE</textarea>$BUTTONS_CONTAINER',
-		buttonEdit: '<span class="$BUTTON_EDIT_CLASS">Edit</span>',
-		inputyUpdate: '<a><span class="$BUTTON_UPDATE_CLASS">Update</span></a>',
-		inputyCancel: '<a><span class="$BUTTON_CANCEL_CLASS">Cancel</span></a>',
-		inputyButtonsContainer: '<div class="$CONTAINER_CLASS">$BUTTON</div>'
+		buttonEdit: '<a href="#"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
+		inputyUpdate: '<a href="#"><span class="$BUTTON_UPDATE_CLASS">Update</span></a>',
+		inputyCancel: '<a href="#"><span class="$BUTTON_CANCEL_CLASS">Cancel</span></a>',
+		inputyButtonsContainer: '<div class="$CONTAINER_CLASS">$BUTTONS</div>'
 	};
 
 	var DEFAULT_CLASSES = (function() {
@@ -142,6 +142,7 @@
 			metrics = {
 				textWidth: o.width(),
 				textHeight: o.height(),
+				textFont: f
 			};
 
 			o.remove();
@@ -182,7 +183,7 @@
 			//If form exists, then I should delegate all events to it as container!!
 			// But I would have trouble with overriding... (?)
 			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
-				var touched = $(this).parent().parent(),
+				var touched = $(this).parent().parent().parent(),
 					inputyActive = self._buildActive();
 				ev.preventDefault();
 				ev.stopPropagation();
@@ -199,14 +200,16 @@
 				self._contentUpdate(inputyValue);
 			});
 
-			element.delegate("." + this.settings.classes.inputyInput, "blur", function(ev) {
+
+			element.delegate("span." + this.settings.classes.inputyCancelButton, "click", function(ev) {
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				ev.preventDefault();
 				ev.stopPropagation();
 
-				self._contentUpdate(inputyValue);
+				self._contentUpdate();
 			});
+
 		},
 
 		getCleanText: function(from) {
@@ -257,16 +260,15 @@
 		_buildButtons: function(buttonsTypesArray) {
 			var buttonType,
 				buildButtonMethod = "_buildButton",
-				buttonsBuffer = "", buttonTemp;
+				buttonsBuffer = "";
 
 			for (buttonType in buttonsTypesArray) {
-				buttonTemp = this[buildButtonMethod + buttonsTypesArray[buttonType]]();
-				buttonsBuffer += this.settings.templates.inputyButtonsContainer
-									.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
-									.replace("$BUTTON", buttonTemp);
+				buttonsBuffer += this[buildButtonMethod + buttonsTypesArray[buttonType]]();
 			}
 
-			return buttonsBuffer;
+			return this.settings.templates.inputyButtonsContainer
+					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
+					.replace("$BUTTONS", buttonsBuffer);;
 		},
 
 		_buildActive: function() {
@@ -313,9 +315,10 @@
 				w = CACHE.el[this.uid].element.data("fixed-width"),
 				h = CACHE.el[this.uid].element.data("fixed-height");
 
-			return "width:$Wpx;height:$Hpx;"
-				.replace("$W", w || eMetrics.textWidth)
-				.replace("$H", h || eMetrics.textHeight);
+			return "width:$Wpx;height:$Hpx;font:$F;"
+				.replace("$W", w || eMetrics.textWidth*1.1)
+				.replace("$H", h || eMetrics.textHeight*1.1)
+				.replace("$F", h || eMetrics.textFont);
 		},
 
 		_getFormInputName: function() {
