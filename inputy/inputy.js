@@ -183,6 +183,15 @@
 			//If form exists, then I should delegate all events to it as container!!
 			// But I would have trouble with overriding... (?)
 			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
+				// Check for other open inputys and save them all
+				var inputySelector = "." + self.settings.classes.inputyInput,
+					$inputyOpened = $(inputySelector);
+
+				if ($inputyOpened.length) {
+					$inputyOpened.parent().find("span." + self.settings.classes.inputyUpdateButton).trigger('click');
+				};
+
+				// Then open current inputy selected
 				var touched = $(this).parent().parent().parent(),
 					inputyActive = self._buildActive();
 				ev.preventDefault();
