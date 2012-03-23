@@ -61,6 +61,10 @@
 			}
 
 			return retValues;
+		},
+
+		closeInputy: function() {
+			this.closeInputy();
 		}
 	};
 
@@ -184,12 +188,7 @@
 			// But I would have trouble with overriding... (?)
 			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
 				// Check for other open inputys and save them all
-				var inputySelector = "." + self.settings.classes.inputyInput,
-					$inputyOpened = $(inputySelector);
-
-				if ($inputyOpened.length) {
-					$inputyOpened.parent().find("span." + self.settings.classes.inputyUpdateButton).trigger('click');
-				};
+				self.closeInputy();
 
 				// Then open current inputy selected
 				var touched = $(this).parent().parent().parent(),
@@ -243,6 +242,18 @@
 					.text($.trim(text))    		//set the text of element
 					.append(childs);	//recover all the childrens and return
 
+		},
+
+		closeInputy: function() {
+			var inputySelector = "." + this.settings.classes.inputyInput,
+				$inputyOpened = $(inputySelector);
+
+			if ($inputyOpened.length) {
+				$inputyOpened
+					.parent()
+					.find("span." + this.settings.classes.inputyUpdateButton)
+					.trigger('click');
+			};
 		},
 
 		_buildFormInput: function() {
@@ -321,12 +332,20 @@
 
 		_getInputBuiltStyle: function() {
 			var eMetrics = Inputy.helpers.getElementMetrics(this.$element)
-				w = CACHE.el[this.uid].element.data("fixed-width"),
-				h = CACHE.el[this.uid].element.data("fixed-height");
+				w = "" + CACHE.el[this.uid].element.data("fixed-width"),
+				h = "" + CACHE.el[this.uid].element.data("fixed-height");
 
-			return "width:$Wpx;height:$Hpx;font:$F;"
-				.replace("$W", w || eMetrics.textWidth*1.1)
-				.replace("$H", h || eMetrics.textHeight*1.1)
+			if (w.indexOf('%') < 0) {
+				w += 'px'
+			};
+
+			if (h.indexOf('%') < 0) {
+				h += 'px'
+			};
+
+			return "width:$W;height:$H;font:$F;"
+				.replace("$W", w || eMetrics.textWidth*1.1 + 'px')
+				.replace("$H", h || eMetrics.textHeight*1.1 + 'px')
 				.replace("$F", h || eMetrics.textFont);
 		},
 
