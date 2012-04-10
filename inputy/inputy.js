@@ -195,8 +195,11 @@
 					inputyActive = self._buildActive();
 				ev.preventDefault();
 				ev.stopPropagation();
-
+				
 				touched.html(inputyActive);
+
+				self.settings.callbacks.onEditMode && self.settings.callbacks.onEditMode();
+
 			});
 
 			element.delegate("span." + this.settings.classes.inputyUpdateButton, "click", function(ev) {
@@ -206,6 +209,9 @@
 				ev.stopPropagation();
 
 				self._contentUpdate(inputyValue);
+
+				self.settings.callbacks.onUpdate && self.settings.callbacks.onUpdate();
+
 			});
 
 
@@ -216,6 +222,9 @@
 				ev.stopPropagation();
 
 				self._contentUpdate();
+
+				self.settings.callbacks.onCancel && self.settings.callbacks.onCancel();
+
 			});
 
 		},
