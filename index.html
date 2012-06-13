@@ -6,7 +6,8 @@
 	<link rel="stylesheet" type="text/css" href="inputy/inputy.css">
 </head>
 <body>
-	<form style="width:350px">
+	<h1>Using a CLASS to refer inputy's inputs</h1>
+	<form id="form1" style="width:350px">
 		<h3 id="title" class="inputy">This is an example text</h3>
 		<p class="inputy" data-name="paragraph1">This is other example text</p>
 		<p class="inputy" data-type="textarea">This is other example text</p>
@@ -14,6 +15,13 @@
 		<button>Submit</button>
 	</form>
 
+	<h1>Using an ID to refer inputy's inputs</h1>
+	<form id="form2" style="width:350px">
+		<h3 id="title1">Inputy By ID title1</h3>
+		<p id="paragraph1" data-name="paragraph1">Inputy By ID paragraph1</p>
+		<p id="paragraph2" data-type="textarea-paragraph">Inputy By ID paragraph2</p>
+		<button>Submit</button>
+	</form>
 
 	<!-- Scripts -->
 	<script type="text/javascript" charset="utf-8" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
@@ -21,8 +29,32 @@
 	
 	<script type="text/javascript">
 		var inputy = $(".inputy").Inputy({});
+		var inputy2 = $("#title1").Inputy({
+			callbacks: {
+				onUpdate: function(value) {
+					alert("updated with value: '" + value + "'");
+				}
+			}
+		});
+		var inputy3 = $("#paragraph1").Inputy({
+			callbacks: {
+				onCancel: function() {
+					alert("canceled update");
+				}
+			}
+		});
+		var inputy4 = $("#paragraph2").Inputy({
+			callbacks: {
+				onEditMode: function() {
+					alert("edit mode triggered");
+				}
+			}
+		});
+		inputy2.Inputy('setValue', "Title by Inputy's method 'setValue'");
+
+
 		var formValues = [];
-		$("form").submit(function(ev) {
+		$("#form1").submit(function(ev) {
 			ev.preventDefault();
 			ev.stopPropagation();
 			var values = {};

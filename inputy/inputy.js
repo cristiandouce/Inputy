@@ -10,9 +10,9 @@
 		formInput: '<input type="hidden" name="$ELEMENT_ID" value="$INPUT_VALUE" />',
 		inputyText: '<input class="$INPUT_CLASS" type="text" style="$INPUT_STYLE" autofocus value="$INPUT_VALUE"/>$BUTTONS_CONTAINER',
 		inputyTextArea: '<textarea class="$INPUT_CLASS" style="$INPUT_STYLE" autofocus >$INPUT_VALUE</textarea>$BUTTONS_CONTAINER',
-		buttonEdit: '<a href="#"><span class="$BUTTON_EDIT_CLASS">Edit</span></a>',
-		inputyUpdate: '<a href="#"><span class="$BUTTON_UPDATE_CLASS">Update</span></a>',
-		inputyCancel: '<a href="#"><span class="$BUTTON_CANCEL_CLASS">Cancel</span></a>',
+		buttonEdit: '<a href="#" class="$BUTTON_EDIT_CLASS"><i></i><span>Edit</span></a>',
+		inputyUpdate: '<a href="#" class="$BUTTON_UPDATE_CLASS"><i></i><span>Update</span></a>',
+		inputyCancel: '<a href="#" class="$BUTTON_CANCEL_CLASS"><i></i><span>Cancel</span></a>',
 		inputyButtonsContainer: '<div class="$CONTAINER_CLASS">$BUTTONS</div>'
 	};
 
@@ -32,16 +32,16 @@
 				inputyForm: inputyForm,
 
 				inputyButtonContainer: inputyButtonContainer,
-				inputyCompleteButtonContainer: inputyButtonContainer,
+				container: "",
 
 				inputyUpdateButton: inputyUpdateButton,
-				inputyCompleteUpdateButton: "icon icon-circle-check " + inputyUpdateButton,
+				update: "inputy-icon inputy-icon-circle-check",
 
 				inputyCancelButton: inputyCancelButton,
-				inputyCompleteCancelButton: "icon icon-circle-close " + inputyCancelButton,
+				cancel: "inputy-icon inputy-icon-circle-close",
 
 				inputyEditButton: inputyEditButton,
-				inputyCompleteEditButton: "icon icon-pencil " + inputyEditButton
+				edit: "inputy-icon inputy-icon-pencil"
 			}
 		})();
 
@@ -61,6 +61,10 @@
 			}
 
 			return retValues;
+		},
+		
+		setValue: function(value) {
+			this._contentUpdate(value);
 		},
 
 		closeInputy: function() {
@@ -186,12 +190,12 @@
 
 			//If form exists, then I should delegate all events to it as container!!
 			// But I would have trouble with overriding... (?)
-			element.delegate("span." + this.settings.classes.inputyEditButton, "click", function(ev) {
+			element.delegate("a." + this.settings.classes.inputyEditButton, "click", function(ev) {
 				// Check for other open inputys and save them all
 				self.closeInputy();
 
 				// Then open current inputy selected
-				var touched = $(this).parent().parent().parent(),
+				var touched = $(this).parent().parent(),
 					inputyActive = self._buildActive();
 				ev.preventDefault();
 				ev.stopPropagation();
@@ -202,7 +206,7 @@
 
 			});
 
-			element.delegate("span." + this.settings.classes.inputyUpdateButton, "click", function(ev) {
+			element.delegate("a." + this.settings.classes.inputyUpdateButton, "click", function(ev) {
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				ev.preventDefault();
@@ -210,12 +214,12 @@
 
 				self._contentUpdate(inputyValue);
 
-				self.settings.callbacks.onUpdate && self.settings.callbacks.onUpdate();
+				self.settings.callbacks.onUpdate && self.settings.callbacks.onUpdate(inputyValue);
 
 			});
 
 
-			element.delegate("span." + this.settings.classes.inputyCancelButton, "click", function(ev) {
+			element.delegate("a." + this.settings.classes.inputyCancelButton, "click", function(ev) {
 				var inputySelector = "." + self.settings.classes.inputyInput,
 					inputyValue = $(inputySelector).val();
 				ev.preventDefault();
@@ -260,7 +264,7 @@
 			if ($inputyOpened.length) {
 				$inputyOpened
 					.parent()
-					.find("span." + this.settings.classes.inputyUpdateButton)
+					.find("a." + this.settings.classes.inputyUpdateButton)
 					.trigger('click');
 			};
 		},
@@ -273,17 +277,17 @@
 
 		_buildButtonEdit: function() {
 			return this.settings.templates.buttonEdit
-					.replace("$BUTTON_EDIT_CLASS", this.settings.classes.inputyCompleteEditButton);
+					.replace("$BUTTON_EDIT_CLASS", this.settings.classes.inputyEditButton + " " + this.settings.classes.edit);
 		},
 
 		_buildButtonUpdate: function() {
 			return this.settings.templates.inputyUpdate
-					.replace("$BUTTON_UPDATE_CLASS", this.settings.classes.inputyCompleteUpdateButton);
+					.replace("$BUTTON_UPDATE_CLASS", this.settings.classes.inputyUpdateButton + " " + this.settings.classes.update);
 		},
 
 		_buildButtonCancel: function() {
 			return this.settings.templates.inputyCancel
-					.replace("$BUTTON_CANCEL_CLASS", this.settings.classes.inputyCompleteCancelButton);
+					.replace("$BUTTON_CANCEL_CLASS", this.settings.classes.inputyCancelButton + " " + this.settings.classes.cancel);
 		},
 
 		_buildButtons: function(buttonsTypesArray) {
@@ -296,8 +300,8 @@
 			}
 
 			return this.settings.templates.inputyButtonsContainer
-					.replace("$CONTAINER_CLASS", this.settings.classes.inputyCompleteButtonContainer)
-					.replace("$BUTTONS", buttonsBuffer);;
+					.replace("$CONTAINER_CLASS", this.settings.classes.inputyButtonContainer + " " + this.settings.classes.container)
+					.replace("$BUTTONS", buttonsBuffer);
 		},
 
 		_buildActive: function() {
