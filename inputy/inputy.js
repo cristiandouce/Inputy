@@ -3,7 +3,10 @@
 		INPUTY_DATA_KEY = "plugin_" + pluginName;
 	
 	var DEFAULT_CALLBACKS = {
-
+		onEditMode: function() { return true; },
+		validate: function(inputyValue) { return true; },
+		onUpdate: function(inputyValue) { return true; },
+		onCancel: function() { return true; }
 	};
 	
 	var DEFAULT_TEMPLATES = {
@@ -212,10 +215,11 @@
 				ev.preventDefault();
 				ev.stopPropagation();
 
-				self._contentUpdate(inputyValue);
+				if(self.settings.callbacks.validate && self.settings.callbacks.validate(inputyValue)) {
+					self._contentUpdate(inputyValue);
 
-				self.settings.callbacks.onUpdate && self.settings.callbacks.onUpdate(inputyValue);
-
+					self.settings.callbacks.onUpdate && self.settings.callbacks.onUpdate(inputyValue);
+				}
 			});
 
 
